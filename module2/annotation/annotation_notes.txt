@@ -1,0 +1,43 @@
+# Annotation Pipeline Started 3/10/26
+
+Step 1)
+Filtering contigs shorter than 500 bp.
+Tool: Filter FASTA 
+Version: Galaxy Version 2.3
+Parameters: Filtered on sequence length; min. length 500 bp
+
+Step 2)
+Quality assessment using CheckM2
+Tool: CheckM2
+Version: Galaxy Version 1.1.0 + galaxy0
+Parameters: Model Options - Output quality prediction for both models for each genome
+
+Step 3)
+Genome annotation
+Tool: Prokka
+Version: Galaxy Version 1.14.6 + galaxy1
+Parameters: Force GenBank compliance - Yes
+
+Step 4) 
+Species ID
+Tool: Blast
+Version: BLASTn (web)
+Parameters: rRNA/ITS db
+
+Step 5)
+Build phylogenetic tree
+Tool: Type Strain Genome Server
+Version: https://tygs.dsmz.de/
+Parameters: Whole Proteome Tree
+
+Step 6)
+Visualize the phylogenetic tree
+Tool: Interactive Tree of Life
+Version: https://itol.embl.de/ v7 
+Parameters: Display bootstraps as text
+
+Step 7)
+Average nucleotide identity
+Tool:  https://www.ezbiocloud.net/tools/ani
+Version: Website
+Parameters: From NCBI Genome Database (https://www.ncbi.nlm.nih.gov/datasets/genome/), downloaded the FASTA file for Salmonella Typhimurium (closest hit on 16S BLAST) and Salmonella bongori (more distant relative). Compared the filtered_contigs.fasta to the FASTA files from Typhimurium and S. bongori.
