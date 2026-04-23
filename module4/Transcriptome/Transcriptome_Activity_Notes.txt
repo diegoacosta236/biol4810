@@ -1,0 +1,83 @@
+Transcriptome Activity Notes
+
+* Transcriptome
+- Project with Dr. Tao, she's interested in bacteria that can degrade bioplastics
+- Some bacteria has been found, but there is an isolate that can only degrades them in broth or plate
+- RNA project
+
+
+Samples.csv:
+* Metadata file for this galaxy activity
+* Download and put into module 4 folder
+* 3 replicates grown on broth, 3 on plate
+
+.gff file:
+* Prokka annotation file
+* Promicroconospora - weird isolate belongs to this genus
+
+.fasta file:
+* Genome
+
+Transcriptome:
+* Has all the reads for the 6 samples
+* Forward and Reverse
+
+
+Step 1)
+We have reads, but we don't know anything about them . . . what to do?
+* Quality Check for reads
+* FastQC/Falco
+Tool: Falco
+Version: Galaxy v1.2.4 + galaxy0
+Parameters: Default
+Files downloaded: Plate1_F/R html file. 
+Notes: ** TODO FOR OUTPUT **
+
+Step 2)
+Trimming the reads/adapters. Trims any reads that dipped below a quality score, 
+Tool: FastP
+Version: Galaxy v.1.3.1 + galaxy0
+Parameters: Default
+Files downloaded: NA
+Notes: Get rid of anything that doesn't meet that quality control. Look at the output from the HTML file. I chose the Plate1 reads and I started off with ~18.29M reads, and got to ~17.56M. 
+
+Too many Ns means that the computer couldn't tell what base would go there.
+Too short reads means that they have to be around 100.
+Adapters
+
+Step 3)
+Take the raw reads and align them with a provided genome.
+Tool: HISAT2
+Version: Galaxy v2.2.2 + galaxy 0
+Parameters: Reference Genome -> From History, Single-end -> Paired-End Collection (FastP output)
+Files downloaded: NA
+Notes: Created a BAM file (like an alignment file) and put the F/R reads on the genome.
+
+* StringTie throws the aligned reads into transcripts
+
+Step 4)
+Tool: StringTie
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Files downloaded: 
+Notes: Takes short reads and figures out which transcript the reads belong (assembling the transcript). 
+
+Step 5)
+Tool: StringTie Merge
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Notes: merge all the files into one
+
+
+Step 6)
+GFF compare takes our transcripts and compares them to our genome annotation
+Tool: GffCompare
+Version: Galaxy v0.12.10 + galaxy 0
+Parameters: Default
+Notes:
+
+Step 7)
+Figure out how many times each transcript occurs per sample (measures the gene expression)
+Tool: featureCounts
+Version: Galaxy v2.1.1 + galaxy 0
+Parameters: Does input have read pairs? -> Yes, paired-ed single fragment
