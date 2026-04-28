@@ -81,3 +81,55 @@ Figure out how many times each transcript occurs per sample (measures the gene e
 Tool: featureCounts
 Version: Galaxy v2.1.1 + galaxy 0
 Parameters: Does input have read pairs? -> Yes, paired-ed single fragment
+
+Step 8)
+Run stringtie again, but this time change some parameters.
+Tool: StringTie
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: HISAT 2 input short mapped reads, use reference GTF/GFF3, use file from history (promicromonospora.gff)
+
+Step 9)
+Tool: StringTie Merge
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Notes: merge all the files into one
+
+Step 10)
+Figure out how many times each transcript occurs per sample (measures the gene expression)
+Tool: featureCounts
+Version: Galaxy v2.1.1 + galaxy 0
+Parameters: Does input have read pairs? -> Yes, paired-ed single fragment. GFF gene identifier -> transcript_id
+
+Step 11)
+Compare the growth media and see the activity of a gene (up-regulated/down-regulated)
+Tool: DESeq2
+Version: 2.11.40.8 + galaxy2
+Parameters: Advanced -> Use beta priors -> yes, Select a factor name -> Growth_Media, 1: Factor Level -> Broth, 2: Factor Level -> Plate, Output Options -> Output normalized counts
+Files downloaded: plot pdf file
+Notes: Check the results of the plot. Plate replicates cluster. Whatever variables, PC1 accounts for 88% of the variance. 
+
+Step 12)
+Filter the data
+Notes: We are only interested in rows where P-value is less than 0.05 (significant)
+Tool: Filter 
+Version: Galaxy v1.1.1
+Parameters: With following condition -> c7<0.05
+
+Step 13)
+Filter the data again, lower fold chain (below 1)
+Notes: We are only interested in rows where P-value is less than 0.05 (significant)
+Tool: Filter 
+Version: Galaxy v1.1.1
+Parameters: With following condition -> abs(c3)>1
+
+Step 14)
+Make a header
+Upload the following as a tabular file: GeneID	Base mean	log2(FC)	StdErr	Wald-Stats	P-Value	P-adj
+
+
+Step 15)
+Concatenate the filtered table and the header together
+Tool: Concatenate multiple datasets or collections
+Version: Galaxy Version 1.0.0
+Parameters: insert dataset -> latest filtered
+ 
