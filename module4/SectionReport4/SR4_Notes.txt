@@ -1,0 +1,12 @@
+Step 1)
+Perform a quality check on the reads
+Tool: Falco
+Version: v1.2.4+galaxy0
+Parameters: Default
+Files downloaded: Falco_SRR25635763_F and R
+
+Step 2)
+Trim any reads/adapters as well as anything that falls below the quality score.
+Tool: FastP
+Version: v1.3.2+galaxy0
+Parameters: Single-end or paired reads -> Paired Collection, rest -> default
