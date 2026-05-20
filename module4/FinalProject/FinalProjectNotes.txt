@@ -1,0 +1,74 @@
+Step 1) 
+Tool: plotQualityProfile
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Default
+Details: Builds a profile to check the quality of the reads. Can check where to cut off the reads if they fall below a certain threshold (30 on the y-axis).
+
+Step 2)
+Tool: filterAndTrim
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Truncate forward -> 240bp, truncate reverse -> 210bp
+Details: Filter off reads where they fall below the threshold. Forward reads are usually good, while reverse need to be cut off slightly earlier.
+
+Step 3)
+Tool: Unzip Collection
+Version: Galaxy Version 1.0.0
+Parameters: Default
+Details: This separates the singular set into forward and reverse for the future. 
+
+Step 4)
+Tool: learnErrors
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Default
+Details: Highlights errors and low-quality reads. Also must be done on each set (forward/reverse).
+
+Step 5)
+Tool: dada
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Default
+Details: Removes sequence errors based on parameters labeled. Also must be done on each set (forward/reverse)
+
+Step 6)
+Tool: mergePairs
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Default
+Details: This helps create a merged version of the forward and reverse reads. Once finished, just check to make sure that the items do have data inside.
+
+Step 7)
+Tool: makeSequenceTable
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Default 
+Details: Uses the merged pairs to make a sequence table that showcases the sequence lengths.
+
+Step 8)
+Tool: removeBimeraDenovo
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Default
+Details: Gets rid of any extra reads.
+
+Step 9)
+Tool: assignTaxonomy and addSpecies
+Version: Galaxy Version 1.38.0+galaxy0
+Parameters: Silva 138 for the references. Default otherwise.
+Details: Assigns the taxonomy/chooses the source, things like phylum/class. Links dna sequence to groups of genus and species.
+
+Step 10) 
+Tool: Create Phyloseq Object
+Version: (Galaxy Version 1.54.0+galaxy0)
+Parameters: Default. Add metadata file.
+Details: Created Phyloseq object in order to visualize the types of diversity.
+
+Step 11)
+Tool: Interactive - Phyloseq
+Version: Web
+Parameters: Default
+Details: Get plots for Alpha Diversity, Ordinance. Can switch certain settings that affect the plots slightly.
+
+Step 12) 
+Tool: Phyloseq - Bar Chart
+Parameters: Choose fill color. Facet optional. Default.
+Version: Galaxy Version 1.54.0+galaxy0
+Details: Create a bar chart from the data. 
+
+
+
