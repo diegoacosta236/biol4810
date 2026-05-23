@@ -1,12 +1,192 @@
 Step 1)
-Perform a quality check on the reads
+We have reads, but we don't know anything about them . . . what to do?
+* Quality Check for reads
+* FastQC/Falco
 Tool: Falco
-Version: v1.2.4+galaxy0
+Version: Galaxy v1.2.4 + galaxy0
 Parameters: Default
-Files downloaded: Falco_SRR25635763_F and R
+Files downloaded: Plate1_F/R html file. 
+Notes: Forward reads have good quality up until 240 bp. Reverse reads have good quality up until around 210bp.
 
 Step 2)
-Trim any reads/adapters as well as anything that falls below the quality score.
+Trimming the reads/adapters. Trims any reads that dipped below a quality score, 
 Tool: FastP
-Version: v1.3.2+galaxy0
-Parameters: Single-end or paired reads -> Paired Collection, rest -> default
+Version: Galaxy v.1.3.1 + galaxy0
+Parameters: Default
+Files downloaded: NA
+Notes: Get rid of anything that doesn't meet that quality control. Look at the output from the HTML file. I chose the Plate1 reads and I started off with ~18.29M reads, and got to ~17.56M. 
+
+Step 3)
+Take the raw reads and align them with a provided genome.
+Tool: HISAT2
+Version: Galaxy v2.2.2 + galaxy 0
+Parameters: Reference Genome -> From History, Single-end -> Paired-End Collection (FastP output)
+Files downloaded: NA
+Notes: Created a BAM file (like an alignment file) and put the F/R reads on the genome.
+
+Step 4)
+Tool: StringTie
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Files downloaded: 
+Notes: Takes short reads and figures out which transcript the reads belong (assembling the transcript). 
+
+Step 5)
+Tool: StringTie Merge
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Notes: merge all the files into one
+
+Step 6)
+GFF compare takes our transcripts and compares them to our genome annotation
+Tool: GffCompare
+Version: Galaxy v0.12.10 + galaxy 0
+Parameters: Default, input the reference gff file
+
+Step 7)
+Figure out how many times each transcript occurs per sample (measures the gene expression)
+Tool: featureCounts
+Version: Galaxy v2.1.1 + galaxy 0
+Parameters: Does input have read pairs? -> Yes, paired-ed single fragment
+Note: Job 195, 196. Done last week, we left off right here.
+
+Step 8)
+Run stringtie AGAIN, but this time change some parameters.
+Tool: StringTie
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: HISAT 2 input short mapped reads, use reference GTF/GFF3, use file from history (promicromonospora.gff)
+
+Step 9)
+Run StringTie MERGE AGAIN
+Tool: StringTie Merge
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Notes: merge all the files into one
+
+Step 10)
+Figure out how many times each transcript occurs per sample (measures the gene expression)
+Tool: featureCounts
+Version: Galaxy v2.1.1 + galaxy 0
+Parameters: Does input have read pairs? -> Yes, paired-ed single fragment. GFF gene identifier -> transcript_id. A GFF/GTF file in your history -> latest stringtie merge
+
+Step 11)
+Run StringTie MERGE AGAIN
+Tool: StringTie Merge
+Version: Galaxy v2.2.3 + galaxy 0
+Parameters: Default
+Notes: merge all the files into one. 
+Input: 209:StringTie on collection 173:Assembled transcripts. Reference annotation to include: 2: promicromonospora.gff
+Output: 231: StringTie merge on dataset ...
+
+Step 12)
+Run featureCounts AGAIN
+Tool: featureCounts
+Version: Galaxy v2.1.1 + galaxy 0
+Parameters: Does input have read pairs? -> Yes, paired-ed single fragment. GFF gene identifier -> transcript_id
+Input:  HISAT2 on dataset ... aligned reads (BAM)
+	Gene annotation file: 231: StringTie merge on dataset 2
+	GFF gene identifier: transcript_idf
+
+Step 13)
+Compare the growth media and see the activity of a gene (up-regulated/down-regulated)
+Tool: DESeq2
+Version: 2.11.40.8 + galaxy2
+Parameters: Advanced -> Use beta priors -> yes, Select a factor name -> Growth_Media, 1: Factor Level -> Broth, 2: Factor Level -> Plate, Output Options -> Output normalized counts
+Files downloaded: plot pdf file
+Notes: Check the results of the plot. Plate replicates cluster. Whatever variables, PC1 accounts for 88% of the variance.
+
+Step 14)
+Filter the data
+Notes: We are only interested in rows where P-value is less than 0.05 (significant)
+Tool: Filter 
+Version: Galaxy v1.1.1
+Parameters: With following condition -> c7<0.05
+
+Step 15)
+Filter the data again, lower fold chain (below 1)
+Notes: We are only interested in rows where P-value is less than 0.05 (significant)
+Tool: Filter 
+Version: Galaxy v1.1.1
+Parameters: With following condition -> abs(c3)>1
+
+Step 16)
+Make a header
+Upload the following as a tabular file: GeneID	Base mean	log2(FC)	StdErr	Wald-Stats	P-Value	P-adj
+Note: Open your notepad/text editor and simply type in "GeneID" and then press TAB. ** DO NOT USE SPACE, USE TAB ** So when you have "GeneID" you should then see "GeneID	" and then type in the next word.
+
+Step 17)
+Concatenate the filtered table and the header together
+Tool: Concatenate multiple datasets or collections
+Version: Galaxy Version 1.0.0
+Parameters: insert dataset -> latest filtered
+
+Step 18)
+Use volcano plot
+Tool: Volcano Plot
+Version: Galaxy Version 4.0.3 + galaxy0
+Parameters: Default
+
+Step 19)
+Open the Differential Gene Expression tabular in Excel. Sort by log2(FC)
+
+At this point we should have 7 files in our folder.
+
+Step 20)
+Upload up10down10 
+Run join two datasets
+Column 1
+Keep header lines
+Notes: Check the columns (there should be two or three new ones added)
+* We need normalized counts to generate a heat map
+
+Step 21)
+Cut columns from a table
+Tool: Cut
+Version: Galaxy v1.0.2
+Parameters: Cut c8-c14
+
+Step 22)
+Tool: heatmap2
+Version: Galaxy v3.3.0 + galaxy 0
+Parameters: Data transformation -> Log2(value+1) transform my data, type of color map -> whatever you want
+Input: Cut 
+Journals will want to see this for transcriptome data.
+Darker green more expression. Darker pink, lower levels of expression.
+
+Step 23)
+Working with the GFF file (promicromonospora.gff)
+Tool: Filter data on any column . . . 
+Version: v1.1.1
+Parameters: c3=="CDS"
+Input: gff file.
+
+Step 24)
+Cut columns from a table
+Tool: Cut
+Version: v1.0.2
+Parameters: c9
+Input: Cut columns -> c9
+
+Step 25)
+One column is really hard to see, must change
+Tool: Convert delimiters to TAB
+Version: v1.0.1
+Parameters: Convert all -> Semicolons
+
+Step 26)
+Take out 'Parent=' from columns
+Tool: Replace Text
+Version: v9.5 + galaxy3
+Parameters: In column 2, Find pattern -> "Parent="
+
+Step 27) 
+We only want two columns from the GFF now
+Tool: Cut
+Version: v1.0.2
+Parameters: cut columns -> c2,c8
+
+Step 28)
+Same as before
+Tool: Join two Datasets
+Version: v2.1.3
+Parameters: using column: 1 for both. Keep header lines -> yes
